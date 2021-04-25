@@ -7,6 +7,7 @@ import org.bankapp.model.User;
 public class BankAppMain {
     public static void main(String[] args) {
         Logger logger = Logger.getLogger(BankAppMain.class);
+        User employee = new User("employee", "employee");
 
         Menu menu = new Menu();
         int selection = 0;

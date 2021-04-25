@@ -1,30 +1,41 @@
 package org.bankapp.model;
 
+import java.util.Date;
 import java.util.List;
 
 public class Account {
     private int accountId;
     private String type;
     private double balance;
-    private User owner;
+    private int ownerId;
+    private boolean pending;
+    private Date createdAt;
     private List<Transaction> transactions;
 
     public Account() {
     }
 
-    public Account(String type, double balance, User owner, List<Transaction> transactions) {
-        this.type = type;
-        this.balance = balance;
-        this.owner = owner;
-        this.transactions = transactions;
+    public Date getCreatedAt() {
+        return createdAt;
     }
 
-    public Account(int accountId, String type, double balance, User owner, List<Transaction> transactions) {
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public Account(String type, int ownerId) {
+        this.type = type;
+        this.balance = 0;
+        this.ownerId = ownerId;
+        this.pending = true;
+    }
+
+    public Account(int accountId, String type, int ownerId) {
         this.accountId = accountId;
         this.type = type;
-        this.balance = balance;
-        this.owner = owner;
-        this.transactions = transactions;
+        this.balance = 0;
+        this.ownerId = ownerId;
+        this.pending = true;
     }
 
     public int getAccountId() {
@@ -51,12 +62,20 @@ public class Account {
         this.balance = balance;
     }
 
-    public User getOwner() {
-        return owner;
+    public int getOwnerId() {
+        return ownerId;
     }
 
-    public void setOwner(User owner) {
-        this.owner = owner;
+    public void setOwnerId(int ownerId) {
+        this.ownerId = ownerId;
+    }
+
+    public boolean isPending() {
+        return pending;
+    }
+
+    public void setPending(boolean pending) {
+        this.pending = pending;
     }
 
     public List<Transaction> getTransactions() {
@@ -73,7 +92,9 @@ public class Account {
                 "accountId=" + accountId +
                 ", type='" + type + '\'' +
                 ", balance=" + balance +
-                ", owner=" + owner +
+                ", ownerId=" + ownerId +
+                ", pending=" + pending +
+                ", createdAt=" + createdAt +
                 ", transactions=" + transactions +
                 '}';
     }

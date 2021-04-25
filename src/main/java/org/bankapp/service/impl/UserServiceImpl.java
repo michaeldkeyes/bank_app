@@ -36,4 +36,9 @@ public class UserServiceImpl implements UserService {
 
         return false;
     }
+
+    @Override
+    public User getUserById(User user) throws BusinessException {
+        return userDAO.getUserById(user);
+    }
 }

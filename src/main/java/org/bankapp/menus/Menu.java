@@ -2,13 +2,17 @@ package org.bankapp.menus;
 
 import org.apache.log4j.Logger;
 import org.bankapp.exception.BusinessException;
+import org.bankapp.model.Account;
 import org.bankapp.model.User;
 import org.bankapp.security.Security;
+import org.bankapp.service.AccountService;
 import org.bankapp.service.UserService;
+import org.bankapp.service.impl.AccountServiceImpl;
 import org.bankapp.service.impl.UserServiceImpl;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
+import java.util.List;
 import java.util.Scanner;
 
 public class Menu {
@@ -43,40 +47,6 @@ public class Menu {
 
         return choice;
     }
-
-//    public void loginMenu() {
-//        int choice;
-//
-//        do {
-//            choice = 0;
-//            logger.info(menuLines);
-//            logger.info("Login");
-//            logger.info(menuLines);
-//            logger.info("Are you logging in as a: ");
-//            logger.info("1) Customer");
-//            logger.info("2) Employee");
-//            logger.info("3) Back to main menu");
-//            try {
-//                choice = Integer.parseInt(input.nextLine());
-//            } catch (NumberFormatException e) {
-//                logger.trace(e);
-//            }
-//
-//            switch (choice) {
-//                case 1:
-//                    customerLoginMenu();
-//                    break;
-//                case 2:
-//                    employeeLoginMenu();
-//                    break;
-//                case 3:
-//                    logger.info("Returning to main menu.\n");
-//                    break;
-//                default:
-//                    logger.info("\nInvalid choice!");
-//            }
-//        } while (choice != 3);
-//    }
 
     public void registerMenu() {
         String userName;
@@ -166,18 +136,122 @@ public class Menu {
         System.out.println("Employee login menu");
     }
 
+    /**
+     * Retrieves all the accounts the logged in user has then displays the menu for customers who are logged in.
+     * @param authUser - The user who is currently logged in
+     */
     public void customerMenu(User authUser) {
-        logger.info(menuLines);
-        logger.info(String.format("Welcome, %s!", authUser.getUsername()));
-        logger.info(menuLines);
-        logger.info("\nHow may we assist you today?");
-        logger.info("1) View accounts");
-        logger.info("2) Apply for a new account");
-        logger.info("3) Withdraw");
-        logger.info("4) Deposit");
-        logger.info("5) Transfer to another account");
-        logger.info("6) Transfer to another member");
-        logger.info("7) Change password");
-        logger.info("8) Logout");
+        int choice = 0;
+        AccountService accountService = new AccountServiceImpl();
+
+        try {
+            List<Account> accounts = accountService.getAccountsByOwnerId(authUser.getId());
+            authUser.setAccounts(accounts);
+        } catch (BusinessException e) {
+            logger.error(e);
+        }
+
+        while (choice != 8) {
+            logger.info(menuLines);
+            logger.info(String.format("Welcome, %s!", authUser.getUsername()));
+            logger.info(menuLines);
+            logger.info("How may we assist you today?\n");
+            logger.info("1) View accounts");
+            logger.info("2) Apply for a new account");
+            logger.info("3) Withdraw");
+            logger.info("4) Deposit");
+            logger.info("5) Transfer to another account");
+            logger.info("6) Transfer to another member");
+            logger.info("7) Change password");
+            logger.info("8) Logout");
+            logger.info("\n Please make a selection: ");
+
+            try {
+                choice = Integer.parseInt(input.nextLine());
+            } catch (NumberFormatException e) {
+                logger.info(e);
+            }
+
+            switch (choice) {
+                case 1:
+                    showUserAccounts(authUser);
+                    break;
+                case 2:
+                    createAccount(authUser, accountService);
+                    break;
+                case 3:
+                    System.out.println("Withdraw");
+                    break;
+                case 4:
+                    System.out.println("Deposit");
+                    break;
+                case 5:
+                    System.out.println("Transfer to another account");
+                    break;
+                case 6:
+                    System.out.println("Transfer to another member");
+                    break;
+                case 7:
+                    System.out.println("Change password");
+                    break;
+                case 8:
+                    logger.info("Have a nice day!");
+                default:
+                    logger.info("Invalid choice. Please select an option from the menu above.");
+            }
+        }
+
+    }
+
+    /**
+     * Displays the logged in user's accounts
+     * @param authUser - The user who is currently logged in
+     */
+    public void showUserAccounts(User authUser) {
+        int i = 1;
+        for (Account account: authUser.getAccounts()) {
+            logger.info(i + ") "
+                    + account.getAccountId()
+                    + " " + account.getType()
+                    + " " + account.getBalance());
+            i++;
+        }
+    }
+
+    /**
+     * Displays the menu to create an account and allows the user to select checking or savings
+     * @param authUser - The user who is currently logged in
+     */
+    public void createAccount(User authUser, AccountService accountService) {
+        int choice = 0;
+        logger.info("What type of account are you applying for?");
+        while (choice != 3) {
+            logger.info("1) Checking");
+            logger.info("2) Savings");
+            logger.info("3) Go back");
+
+            try {
+                choice = Integer.parseInt(input.nextLine());
+            } catch (NumberFormatException e) {
+                logger.info(e);
+            }
+
+            if (choice == 1 || choice == 2) {
+                String accountType = choice == 1 ? "Checking" : "Savings";
+                Account newUserAccount = new Account(accountType, authUser.getId());
+                try {
+                    newUserAccount = accountService.createAccount(newUserAccount);
+                    if (newUserAccount != null) {
+                        authUser.getAccounts().add(newUserAccount);
+                        logger.info("Thank you for applying for an account with Bank App!");
+                        logger.info("Your account will be approved in 3-5 business days");
+                    }
+                } catch (BusinessException e) {
+                    logger.error(e);
+                }
+            }
+            else if (choice == 3) logger.info("Going back");
+            else logger.info("Invalid selection. Please select an option from the menu above");
+        }
     }
 }

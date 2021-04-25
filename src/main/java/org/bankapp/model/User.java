@@ -1,5 +1,6 @@
 package org.bankapp.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class User {
@@ -9,24 +10,13 @@ public class User {
     private List<Account> accounts;
 
     public User() {
+        this.accounts = new ArrayList<>();
     }
 
     public User(String username, String password) {
         this.username = username;
         this.password = password;
-    }
-
-    public User(String username, String password, List<Account> accounts) {
-        this.username = username;
-        this.password = password;
-        this.accounts = accounts;
-    }
-
-    public User(int id, String username, String password, List<Account> accounts) {
-        this.id = id;
-        this.username = username;
-        this.password = password;
-        this.accounts = accounts;
+        this.accounts = new ArrayList<>();
     }
 
     public int getId() {
