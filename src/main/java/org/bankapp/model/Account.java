@@ -1,12 +1,13 @@
 package org.bankapp.model;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
 public class Account {
     private int accountId;
     private String type;
-    private double balance;
+    private BigDecimal balance;
     private int ownerId;
     private boolean pending;
     private Date createdAt;
@@ -25,7 +26,7 @@ public class Account {
 
     public Account(String type, int ownerId) {
         this.type = type;
-        this.balance = 0;
+        this.balance = BigDecimal.valueOf(0);
         this.ownerId = ownerId;
         this.pending = true;
     }
@@ -33,7 +34,7 @@ public class Account {
     public Account(int accountId, String type, int ownerId) {
         this.accountId = accountId;
         this.type = type;
-        this.balance = 0;
+        this.balance = BigDecimal.valueOf(0);
         this.ownerId = ownerId;
         this.pending = true;
     }
@@ -54,11 +55,11 @@ public class Account {
         this.type = type;
     }
 
-    public double getBalance() {
+    public BigDecimal getBalance() {
         return balance;
     }
 
-    public void setBalance(double balance) {
+    public void setBalance(BigDecimal balance) {
         this.balance = balance;
     }
 

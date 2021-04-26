@@ -26,15 +26,11 @@ public class UserServiceImpl implements UserService {
     @Override
     public boolean authorizeUser(User user, User storedUser) throws BusinessException {
         try {
-            if (Security.validatePassword(user.getPassword(), storedUser.getPassword())) {
-                return true;
-            }
+            return Security.validatePassword(user.getPassword(), storedUser.getPassword());
         } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
             System.out.println(e);
             throw new BusinessException("An internal error occurred. Please contact sysadmin");
         }
-
-        return false;
     }
 
     @Override

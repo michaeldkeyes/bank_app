@@ -5,6 +5,7 @@ import org.bankapp.dao.dbutil.PostgresConnection;
 import org.bankapp.exception.BusinessException;
 import org.bankapp.model.Account;
 
+import java.math.BigDecimal;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,8 +34,7 @@ public class AccountDAOImpl implements AccountDAO {
             }
             return null;
         } catch (SQLException e) {
-            System.out.println(e);
-            throw new BusinessException("Internal error occured. Please contact sysadmin");
+            throw new BusinessException("Internal error occured. Please contact sysadmin " + e);
         }
     }
 
@@ -52,7 +52,7 @@ public class AccountDAOImpl implements AccountDAO {
                     Account account = new Account();
                     account.setAccountId(resultSet.getInt("account_id"));
                     account.setType(resultSet.getString("type"));
-                    account.setBalance(resultSet.getFloat("balance"));
+                    account.setBalance(resultSet.getBigDecimal("balance"));
                     account.setOwnerId(resultSet.getInt("owner_id"));
                     account.setPending(resultSet.getBoolean("pending"));
                     account.setCreatedAt(resultSet.getDate("created_at"));
@@ -63,8 +63,46 @@ public class AccountDAOImpl implements AccountDAO {
             }
 
         } catch (SQLException e) {
-            System.out.println(e);
             throw new BusinessException("Internal error occurred. Please contact sysadmin");
+        }
+    }
+
+    /**
+     * Updates the account's balance in the database
+     * @param accountId - The id of the account to be updated
+     * @param newBalance - The new balance
+     * @return - An account object with the updated balance
+     * @throws BusinessException - If an SQLException happens or the account could not be updated for some reason
+     */
+    @Override
+    public Account updateBalance(int accountId, BigDecimal newBalance) throws BusinessException {
+        try(Connection connection = PostgresConnection.getConnection()) {
+            String sql = "UPDATE bankapp_schema.accounts SET balance = ? WHERE account_id = ?";
+
+            try(PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+                ps.setBigDecimal(1, newBalance);
+                ps.setInt(2, accountId);
+
+                int c = ps.executeUpdate();
+                if (c == 1) {
+                    ResultSet resultSet = ps.getGeneratedKeys();
+                    Account updatedAccount = new Account();
+                    if (resultSet.next()) {
+                        updatedAccount.setAccountId(resultSet.getInt("account_id"));
+                        updatedAccount.setType(resultSet.getString("type"));
+                        updatedAccount.setBalance(resultSet.getBigDecimal("balance"));
+                        updatedAccount.setOwnerId(resultSet.getInt("owner_id"));
+                        updatedAccount.setPending(resultSet.getBoolean("pending"));
+                        updatedAccount.setCreatedAt(resultSet.getDate("created_at"));
+                        return updatedAccount;
+                    } else {
+                        throw new BusinessException("Account could not be updated.");
+                    }
+                }
+                return null;
+            }
+        } catch (SQLException e) {
+            throw new BusinessException("Internal error occurred. Please contact sysadmin" + e);
         }
     }
 }
