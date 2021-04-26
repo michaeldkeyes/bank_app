@@ -1,28 +1,33 @@
 package org.bankapp.model;
 
-import java.util.Date;
+import java.sql.Timestamp;
 
 public class Transaction {
     private int transactionId;
     private int amount;
     private String memo;
-    private Date timeStamp;
-    private Account account;
+    private Timestamp timestamp;
+    private int fromAccount;
+    private int toAccount;
 
     public Transaction() {
     }
 
-    public Transaction(int amount, String memo, Account account) {
+    public Transaction(int amount, String memo, Timestamp timestamp, int fromAccount, int toAccount) {
         this.amount = amount;
         this.memo = memo;
-        this.account = account;
+        this.timestamp = timestamp;
+        this.fromAccount = fromAccount;
+        this.toAccount = toAccount;
     }
 
-    public Transaction(int transactionId, int amount, String memo, Account account) {
+    public Transaction(int transactionId, int amount, String memo, Timestamp timestamp, int fromAccount, int toAccount) {
         this.transactionId = transactionId;
         this.amount = amount;
         this.memo = memo;
-        this.account = account;
+        this.timestamp = timestamp;
+        this.fromAccount = fromAccount;
+        this.toAccount = toAccount;
     }
 
     public int getTransactionId() {
@@ -49,12 +54,28 @@ public class Transaction {
         this.memo = memo;
     }
 
-    public Account getAccount() {
-        return account;
+    public Timestamp getTimestamp() {
+        return timestamp;
     }
 
-    public void setAccount(Account account) {
-        this.account = account;
+    public void setTimestamp(Timestamp timestamp) {
+        this.timestamp = timestamp;
+    }
+
+    public int getFromAccount() {
+        return fromAccount;
+    }
+
+    public void setFromAccount(int fromAccount) {
+        this.fromAccount = fromAccount;
+    }
+
+    public int getToAccount() {
+        return toAccount;
+    }
+
+    public void setToAccount(int toAccount) {
+        this.toAccount = toAccount;
     }
 
     @Override
@@ -63,7 +84,9 @@ public class Transaction {
                 "transactionId=" + transactionId +
                 ", amount=" + amount +
                 ", memo='" + memo + '\'' +
-                ", account=" + account +
+                ", timestamp=" + timestamp +
+                ", fromAccount=" + fromAccount +
+                ", toAccount=" + toAccount +
                 '}';
     }
 }

@@ -6,8 +6,10 @@ import org.bankapp.model.Account;
 import org.bankapp.model.User;
 import org.bankapp.security.Security;
 import org.bankapp.service.AccountService;
+import org.bankapp.service.TransactionService;
 import org.bankapp.service.UserService;
 import org.bankapp.service.impl.AccountServiceImpl;
+import org.bankapp.service.impl.TransactionServiceImpl;
 import org.bankapp.service.impl.UserServiceImpl;
 
 import java.math.BigDecimal;
@@ -292,22 +294,26 @@ public class Menu {
                     try {
                         amount = BigDecimal.valueOf(Double.parseDouble(input.nextLine()));
                         BigDecimal newBalance;
+                        StringBuilder memo = new StringBuilder("Deposit ");
                         if (isWithdrawal && authUser.getAccounts().get(choice-1).getBalance().compareTo(amount) >= 0) {
                             amount = amount.negate();
+                            memo.replace(0, 7, "Withdraw ");
                         } else if (isWithdrawal) {
                             logger.info("You cannot withdraw more than your account balance.");
                             continue;
                         }
+                        TransactionService ts = new TransactionServiceImpl();
+                        int accountId = authUser.getAccounts().get(choice-1).getAccountId();
                         newBalance = authUser.getAccounts().get(choice-1).getBalance().add(amount);
-
-                        Account updatedAccount = accountService.updateBalance(authUser.getAccounts().get(choice-1).getAccountId(), newBalance);
+                        memo.append(String.format(" %s from account %d to account %d", amount.toString(), accountId, accountId));
+                        Account updatedAccount = accountService.updateBalance(accountId, newBalance);
+                        ts.createTransaction(accountId, accountId, memo.toString(), amount);
                         authUser.getAccounts().set(choice-1, updatedAccount);
                     } catch (NumberFormatException e) {
                         logger.info("Invalid selection. Please select an option from the menu above");
                     } catch (BusinessException e) {
                         System.out.println(e);
                     }
-
                 }
             }
     }
