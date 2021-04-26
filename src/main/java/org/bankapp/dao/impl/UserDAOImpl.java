@@ -24,14 +24,8 @@ public class UserDAOImpl implements UserDAO {
                 preparedStatement.setString(2, user.getPassword());
 
                 int c = preparedStatement.executeUpdate();
-                if (c == 1) {
-                    ResultSet resultSet = preparedStatement.getGeneratedKeys();
-                    if (resultSet.next()) {
-                        System.out.println("Successfully added user: " + user);
-                    } else {
-                        throw new BusinessException("User could not be added.");
-                    }
-                }
+                if (c != 1) throw new BusinessException("User could not be added.");
+
             }
 
         } catch (SQLException e) {

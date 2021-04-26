@@ -9,5 +9,6 @@ import java.util.List;
 public interface AccountDAO {
     public Account createAccount(Account account) throws BusinessException;
     public List<Account> getAccountsByOwnerId(int ownerId) throws BusinessException;
-    public Account updateBalance(int accountId, BigDecimal newBalance) throws BusinessException;
+    public void updateBalance(Account account, BigDecimal newBalance) throws BusinessException;
+    public Account getAccountById(int accountId) throws BusinessException;
 }

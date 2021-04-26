@@ -7,6 +7,7 @@ import org.bankapp.model.Transaction;
 
 import java.math.BigDecimal;
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.List;
 
 public class TransactionDAOImpl implements TransactionDAO {
@@ -21,7 +22,7 @@ public class TransactionDAOImpl implements TransactionDAO {
      * @throws BusinessException - If an SQLException occurs or the transaction could not be added to the database
      */
     @Override
-    public Transaction createTransaction(int fromAccount, int toAccount, String memo, BigDecimal amount) throws BusinessException{
+    public void createTransaction(int fromAccount, int toAccount, String memo, BigDecimal amount) throws BusinessException{
         try (Connection connection = PostgresConnection.getConnection()) {
             String sql = "INSERT INTO bankapp_schema.transactions (memo, \"timestamp\", from_account_id, to_account_id) VALUES(?, ?, ?, ?);\n";
             try(PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -40,13 +41,11 @@ public class TransactionDAOImpl implements TransactionDAO {
                         transaction.setTimestamp(rs.getTimestamp("timestamp"));
                         transaction.setFromAccount(rs.getInt("from_account_id"));
                         transaction.setToAccount(rs.getInt("to_account_id"));
-                        return transaction;
                     } else {
                         throw new BusinessException("Account could not be created.");
                     }
                 }
             }
-            return null;
         } catch (SQLException e) {
             throw new BusinessException("Internal error occured. Please contact sysadmin " + e);
         }
@@ -54,6 +53,28 @@ public class TransactionDAOImpl implements TransactionDAO {
 
     @Override
     public List<Transaction> getAllTransactionsByAccount(int accountId) throws BusinessException {
+        List<Transaction> transactions = new ArrayList<>();
+        try(Connection connection = PostgresConnection.getConnection()) {
+            String sql = "SELECT transaction_id, memo, \"timestamp\", from_account_id, to_account_id FROM bankapp_schema.transactions where from_account_id = ? or to_account_id = ?;\n";
+            try(PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+                ps.setInt(1, accountId);
+                ps.setInt(2, accountId);
 
+                ResultSet rs = ps.executeQuery();
+
+                while (rs.next()) {
+                    Transaction transaction = new Transaction();
+                    transaction.setToAccount(rs.getInt("to_account_id"));
+                    transaction.setTransactionId(rs.getInt("transaction_id"));
+                    transaction.setFromAccount(rs.getInt("from_account_id"));
+                    transaction.setTimestamp(rs.getTimestamp("timestamp"));
+                    transaction.setMemo(rs.getString("memo"));
+                    transactions.add(transaction);
+                }
+            }
+        } catch (SQLException e) {
+            throw new BusinessException("Internal error occurred. Please contact sysadmin " + e);
+        }
+        return transactions;
     }
 }

@@ -9,6 +9,7 @@ import org.bankapp.service.AccountService;
 import java.math.BigDecimal;
 import java.util.List;
 
+
 public class AccountServiceImpl implements AccountService {
     private final AccountDAO accountDAO = new AccountDAOImpl();
 
@@ -23,9 +24,21 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public Account updateBalance(int accountId, BigDecimal newBalance) throws BusinessException {
-        return accountDAO.updateBalance(accountId, newBalance);
+    public void updateBalance(Account account, BigDecimal amount) throws BusinessException {
+        BigDecimal newBalance = account.getBalance().add(amount);
+        account.setBalance(newBalance);
+        accountDAO.updateBalance(account, newBalance);
     }
 
+    @Override
+    public Account getAccountById(int accountId) throws BusinessException {
+        return accountDAO.getAccountById(accountId);
+    }
+
+    @Override
+    public void transfer(Account fromAccount, Account toAccount, BigDecimal amount) throws BusinessException {
+        updateBalance(fromAccount, amount.negate());
+        updateBalance(toAccount, amount);
+    }
 
 }

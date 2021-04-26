@@ -1,10 +1,10 @@
 package org.bankapp.model;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 public class Transaction {
     private int transactionId;
-    private int amount;
     private String memo;
     private Timestamp timestamp;
     private int fromAccount;
@@ -13,17 +13,15 @@ public class Transaction {
     public Transaction() {
     }
 
-    public Transaction(int amount, String memo, Timestamp timestamp, int fromAccount, int toAccount) {
-        this.amount = amount;
+    public Transaction(String memo, Timestamp timestamp, int fromAccount, int toAccount) {
         this.memo = memo;
         this.timestamp = timestamp;
         this.fromAccount = fromAccount;
         this.toAccount = toAccount;
     }
 
-    public Transaction(int transactionId, int amount, String memo, Timestamp timestamp, int fromAccount, int toAccount) {
+    public Transaction(int transactionId, String memo, Timestamp timestamp, int fromAccount, int toAccount) {
         this.transactionId = transactionId;
-        this.amount = amount;
         this.memo = memo;
         this.timestamp = timestamp;
         this.fromAccount = fromAccount;
@@ -36,14 +34,6 @@ public class Transaction {
 
     public void setTransactionId(int transactionId) {
         this.transactionId = transactionId;
-    }
-
-    public int getAmount() {
-        return amount;
-    }
-
-    public void setAmount(int amount) {
-        this.amount = amount;
     }
 
     public String getMemo() {
@@ -82,7 +72,6 @@ public class Transaction {
     public String toString() {
         return "Transaction{" +
                 "transactionId=" + transactionId +
-                ", amount=" + amount +
                 ", memo='" + memo + '\'' +
                 ", timestamp=" + timestamp +
                 ", fromAccount=" + fromAccount +
