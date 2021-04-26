@@ -2,6 +2,7 @@ package org.bankapp;
 
 import org.apache.log4j.Logger;
 import org.bankapp.menus.CustomerMenu;
+import org.bankapp.menus.EmployeeMenu;
 import org.bankapp.menus.Menu;
 import org.bankapp.model.User;
 
@@ -18,12 +19,15 @@ public class BankAppMain {
                 case 1:
                     User authUser = menu.customerLoginMenu();
                     if (authUser != null) {
-                        CustomerMenu cm = new CustomerMenu();
+                        CustomerMenu cm = new CustomerMenu(authUser);
                         cm.customerMenu(authUser);
                     }
                     break;
                 case 2:
-                    System.out.println("Employee login menu");
+                    if (menu.employeeLoginMenu()) {
+                        EmployeeMenu employeeMenu = new EmployeeMenu();
+                        employeeMenu.employeeMainMenu();
+                    }
                     break;
                 case 3:
                     menu.registerMenu();

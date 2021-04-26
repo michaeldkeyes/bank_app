@@ -17,8 +17,22 @@ import java.util.Scanner;
 public class CustomerMenu {
 
     private final Logger logger = Logger.getLogger(CustomerMenu.class);
-    private final String menuLines = "============================================================";
     private final Scanner input = new Scanner(System.in);
+
+    private final String[] customerMenuOptions = {"View Accounts", "Apply For A New Account", "Withdraw", "Deposit", "Transfer", "Logout"};
+    private final String[] createAccountMenuOptions = {"Checking", "Savings", "Go Back"};
+
+    private final AccountService accountService = new AccountServiceImpl();
+    private List<Account> accounts;
+
+    public CustomerMenu(User authUser) {
+        try {
+            this.accounts =  accountService.getAccountsByOwnerId(authUser.getId());
+            authUser.setAccounts(this.accounts);
+        } catch (BusinessException e) {
+            logger.error(e);
+        }
+    }
 
     /**
      * Retrieves all the accounts the logged in user has then displays the menu for customers who are logged in.
@@ -26,54 +40,41 @@ public class CustomerMenu {
      */
     public void customerMenu(User authUser) {
         int choice = 0;
-        AccountService accountService = new AccountServiceImpl();
 
-        try {
-            List<Account> accounts = accountService.getAccountsByOwnerId(authUser.getId());
-            authUser.setAccounts(accounts);
-        } catch (BusinessException e) {
-            logger.error(e);
-        }
-
-        while (choice != 7) {
-            logger.info(menuLines);
+        while (choice != customerMenuOptions.length) {
+            logger.info(MenuUtils.MENU_LINES);
             logger.info(String.format("Welcome, %s!", authUser.getUsername()));
-            logger.info(menuLines);
+            logger.info(MenuUtils.MENU_LINES);
             logger.info("How may we assist you today?\n");
-            logger.info("1) View accounts");
-            logger.info("2) Apply for a new account");
-            logger.info("3) Withdraw");
-            logger.info("4) Deposit");
-            logger.info("5) Transfer to another account");
-            logger.info("6) Transfer to another member");
-            logger.info("7) Logout");
+            for (int i = 0; i < customerMenuOptions.length; i++) {
+                logger.info((i+1) + ") " + customerMenuOptions[i]);
+            }
             logger.info("\n Please make a selection: ");
 
-            choice = getChoice();
+            choice = MenuUtils.getChoice();
 
             switch (choice) {
                 case 1:
                     showUserAccountsMenu(authUser);
                     break;
                 case 2:
-                    if (authUser.getAccounts().size() < 2) createAccountMenu(authUser, accountService);
+                    if (authUser.getAccounts().size() < 2) createAccountMenu(authUser);
                     else logger.info("You already have the maximum number of accounts allowed\n");
                     break;
                 case 3:
                     if (authUser.getAccounts().isEmpty()) logger.info("You currently do not have any accounts available. "
                             + "Either apply for a new account, or wait for your account to be approved");
-                    withdrawDepositMenu(authUser, accountService, true);
+                    withdrawDepositMenu(authUser, true);
                     break;
                 case 4:
                     if (authUser.getAccounts().isEmpty()) logger.info("You currently do not have any accounts available. "
                             + "Either apply for a new account, or wait for your account to be approved");
-                    withdrawDepositMenu(authUser, accountService, false);
+                    withdrawDepositMenu(authUser, false);
                     break;
                 case 5:
-                case 6:
                     transferMenu(authUser, accountService);
                     break;
-                case 7:
+                case 6:
                     logger.info("Have a nice day!");
                     break;
                 default:
@@ -89,12 +90,11 @@ public class CustomerMenu {
     private void showUserAccountsMenu(User authUser) {
 
         int choice = 0;
-        List<Account> accounts = authUser.getAccounts();
         while (choice != accounts.size() + 1) {
             showNonPendingAccounts(authUser);
             logger.info((accounts.size()+1) + ") Go back");
             logger.info("Select an account to view transactions");
-            choice = getChoice();
+            choice = MenuUtils.getChoice();
             if (choice > 0 && choice <= accounts.size()) {
                 TransactionService ts = new TransactionServiceImpl();
                 try {
@@ -133,19 +133,19 @@ public class CustomerMenu {
      * Displays the menu to create an account and allows the user to select checking or savings
      * @param authUser - The user who is currently logged in
      */
-    private void createAccountMenu(User authUser, AccountService accountService) {
-        int choice = 0;
-        logger.info("What type of account are you applying for?");
-        while (choice != 3) {
-            logger.info("1) Checking");
-            logger.info("2) Savings");
-            logger.info("3) Go back");
-            choice = getChoice();
+    private void createAccountMenu(User authUser) {
+        try {
+            int choice = 0;
+            logger.info("What type of account are you applying for?");
+            while (choice != createAccountMenuOptions.length) {
+                for (int i = 0; i < createAccountMenuOptions.length; i++) {
+                    logger.info((i+1) + ") " + createAccountMenuOptions[i]);
+                }
+                choice = MenuUtils.getChoice();
 
-            if (choice == 1 || choice == 2) {
-                String accountType = choice == 1 ? "Checking" : "Savings";
-                Account newUserAccount = new Account(accountType, authUser.getId());
-                try {
+                if (choice == 1 || choice == 2) {
+                    String accountType = choice == 1 ? "Checking" : "Savings";
+                    Account newUserAccount = new Account(accountType, authUser.getId());
                     newUserAccount = accountService.createAccount(newUserAccount);
                     if (newUserAccount != null) {
                         authUser.getAccounts().add(newUserAccount);
@@ -153,28 +153,27 @@ public class CustomerMenu {
                         logger.info("Your account will be approved in 3-5 business days");
                         choice = 3;
                     }
-                } catch (BusinessException e) {
-                    logger.error(e);
                 }
+                else logger.info("Invalid selection. Please select an option from the menu above");
             }
-            else if (choice == 3) logger.info("Going back");
-            else logger.info("Invalid selection. Please select an option from the menu above");
+        } catch (BusinessException e) {
+            logger.error(e);
         }
+
     }
 
     /**
      * Displays the menu that withdraws or deposits an amount that the user inputs
      * @param authUser - The user who is currently logged in
-     * @param as - The AccountService object that allows us to make changes to accounts
      * @param isWithdrawal - A boolean for determining if this is a withdraw or a deposit
      */
-    private void withdrawDepositMenu(User authUser, AccountService as, boolean isWithdrawal) {
+    private void withdrawDepositMenu(User authUser, boolean isWithdrawal) {
         int choice = 0;
         while (choice != authUser.getAccounts().size() + 1) {
             showNonPendingAccounts(authUser);
             logger.info(authUser.getAccounts().size() + 1 + ") Go back\n");
             logger.info("Select one of your accounts: ");
-            choice = getChoice();
+            choice = MenuUtils.getChoice();
 
             if (choice > 0 && choice <= authUser.getAccounts().size()) {
                 BigDecimal amount;
@@ -192,7 +191,7 @@ public class CustomerMenu {
                     }
                     Account accountToUpdate = authUser.getAccounts().get(choice-1);
                     TransactionService ts = new TransactionServiceImpl();
-                    as.updateBalance(accountToUpdate, amount);
+                    accountService.updateBalance(accountToUpdate, amount);
                     memo.append(amount.toString());
                     int accountId = accountToUpdate.getAccountId();
                     ts.createTransaction(accountId, accountId, memo.toString(), amount);
@@ -216,12 +215,12 @@ public class CustomerMenu {
             showNonPendingAccounts(authUser);
             logger.info(authUser.getAccounts().size() + 1 + ") Go back\n");
             logger.info("Select one of your accounts that you wish to transfer from: ");
-            choice = getChoice();
+            choice = MenuUtils.getChoice();
 
             if (choice > 0 && choice <= authUser.getAccounts().size()) {
                 int transferTo = 0;
                 logger.info("Please enter the account number you wish to transfer to");
-                transferTo = getChoice();
+                transferTo = MenuUtils.getChoice();
                 try {
                     Account toAccount =  as.getAccountById(transferTo);
                     Account fromAccount = authUser.getAccounts().get(choice-1);
@@ -239,19 +238,5 @@ public class CustomerMenu {
                 }
             }
         }
-    }
-
-    /**
-     * Gets input from a user and then tries to parse that input to an int
-     * @return the integer the user input
-     */
-    private int getChoice() {
-        int choice = 0;
-        try {
-            choice = Integer.parseInt(input.nextLine());
-        } catch (NumberFormatException e) {
-            logger.info(e);
-        }
-        return choice;
     }
 }

@@ -12,28 +12,23 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.Scanner;
 
 public class Menu {
-    private final Logger logger;
-    private final String menuLines;
+    private final Logger logger = Logger.getLogger(Menu.class);
     private final Scanner input = new Scanner(System.in);
 
-    public Menu() {
-        this.logger = Logger.getLogger(Menu.class);
-        this.menuLines = "============================================================";
-    }
+    private final String[] mainMenuOptions = {"Customer Login", "Employee Login", "Register", "Exit"};
 
     public int mainMenu () {
         int choice = 0;
 
         do {
-            logger.info(menuLines);
+            logger.info(MenuUtils.MENU_LINES);
             logger.info("Welcome to Bank App!");
-            logger.info(menuLines);
-            logger.info("1) Customer Login");
-            logger.info("2) Employee Login");
-            logger.info("3) Register");
-            logger.info("4) Exit");
+            logger.info(MenuUtils.MENU_LINES);
+            for (int i = 0; i < mainMenuOptions.length; i++) {
+                logger.info((i+1) + ") " + mainMenuOptions[i]);
+            }
 
-            choice = getChoice();
+            choice = MenuUtils.getChoice();
 
         } while (choice < 1 || choice > 4);
 
@@ -48,9 +43,9 @@ public class Menu {
 
         User user = new User();
 
-        logger.info(menuLines);
+        logger.info(MenuUtils.MENU_LINES);
         logger.info("Register");
-        logger.info(menuLines);
+        logger.info(MenuUtils.MENU_LINES);
 
         do {
             logger.info("Enter your username: ");
@@ -96,9 +91,9 @@ public class Menu {
         UserService userService = new UserServiceImpl();
 
         while (failedLoginAttempts < 3) {
-            logger.info(menuLines);
+            logger.info(MenuUtils.MENU_LINES);
             logger.info("Customer Login");
-            logger.info(menuLines);
+            logger.info(MenuUtils.MENU_LINES);
             logger.info("Please enter your username: ");
             userName = input.nextLine();
             logger.info("\nPlease enter your password: ");
@@ -124,22 +119,30 @@ public class Menu {
         return null;
     }
 
-    public void employeeLoginMenu() {
-        System.out.println("Employee login menu");
-    }
+    public boolean employeeLoginMenu() {
+        String userName;
+        String password;
+        int failedLoginAttempts = 0;
 
-    /**
-     * Gets input from a user and then tries to parse that input to an int
-     * @return the integer the user input
-     */
-    private int getChoice() {
-        int choice = 0;
-        try {
-            choice = Integer.parseInt(input.nextLine());
-        } catch (NumberFormatException e) {
-            logger.info(e);
+        while (failedLoginAttempts < 3) {
+            logger.info(MenuUtils.MENU_LINES);
+            logger.info("Employee Login");
+            logger.info(MenuUtils.MENU_LINES);
+            logger.info("Please enter your username: ");
+            userName = input.nextLine();
+            logger.info("\nPlease enter your password: ");
+            password = input.nextLine();
+
+            if (userName.equals("employee") && password.equals("employee")) {
+                return true;
+            } else {
+                logger.info("\nUsername/password does not match.\n");
+                failedLoginAttempts++;
+                if (failedLoginAttempts == 3) {
+                    logger.info("Too many login attempts. Please contact customer support");
+                }
+            }
         }
-        return choice;
+        return false;
     }
-
 }
