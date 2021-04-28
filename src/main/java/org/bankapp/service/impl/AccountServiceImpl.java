@@ -36,9 +36,19 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
+    public List<Account> getAccountsByPending(boolean isPending) throws BusinessException {
+        return accountDAO.getAccountsByPending(isPending);
+    }
+
+    @Override
     public void transfer(Account fromAccount, Account toAccount, BigDecimal amount) throws BusinessException {
         updateBalance(fromAccount, amount.negate());
         updateBalance(toAccount, amount);
+    }
+
+    @Override
+    public void updatePending(Account account, boolean pending) throws BusinessException {
+        accountDAO.updatePending(account, pending);
     }
 
 }

@@ -96,4 +96,5 @@ public class UserDAOImpl implements UserDAO {
             throw new BusinessException(sqlexceptionString + e);
         }
     }
+
 }

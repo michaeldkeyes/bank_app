@@ -11,4 +11,6 @@ public interface AccountDAO {
     public List<Account> getAccountsByOwnerId(int ownerId) throws BusinessException;
     public void updateBalance(Account account, BigDecimal newBalance) throws BusinessException;
     public Account getAccountById(int accountId) throws BusinessException;
+    List<Account> getAccountsByPending(boolean isPending) throws BusinessException;
+    public void updatePending(Account account, boolean pending) throws BusinessException;
 }

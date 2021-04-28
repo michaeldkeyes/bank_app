@@ -4,7 +4,7 @@ import org.bankapp.exception.BusinessException;
 import org.bankapp.model.User;
 
 public interface UserDAO {
-    public void addUser(User user) throws BusinessException;
-    public User getUserByUsername(User user) throws BusinessException;
-    public User getUserById(User user) throws BusinessException;
+    void addUser(User user) throws BusinessException;
+    User getUserByUsername(User user) throws BusinessException;
+    User getUserById(User user) throws BusinessException;
 }

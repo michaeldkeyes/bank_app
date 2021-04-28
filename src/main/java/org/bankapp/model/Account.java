@@ -96,7 +96,6 @@ public class Account {
                 ", ownerId=" + ownerId +
                 ", pending=" + pending +
                 ", createdAt=" + createdAt +
-                ", transactions=" + transactions +
                 '}';
     }
 }

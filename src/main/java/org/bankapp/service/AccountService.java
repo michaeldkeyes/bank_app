@@ -11,5 +11,7 @@ public interface AccountService {
     public List<Account> getAccountsByOwnerId(int ownerId) throws BusinessException;
     public void updateBalance(Account account, BigDecimal amount) throws BusinessException;
     public Account getAccountById(int accountId) throws BusinessException;
-    void transfer(Account fromAccount, Account toAccount, BigDecimal amount) throws BusinessException;
+    public List<Account> getAccountsByPending(boolean isPending) throws BusinessException;
+    public void transfer(Account fromAccount, Account toAccount, BigDecimal amount) throws BusinessException;
+    public void updatePending(Account account, boolean pending) throws BusinessException;
 }

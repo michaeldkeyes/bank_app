@@ -68,6 +68,54 @@ public class AccountDAOImpl implements AccountDAO {
         }
     }
 
+    @Override
+    public List<Account> getAccountsByPending(boolean isPending) throws BusinessException {
+        try(Connection connection = PostgresConnection.getConnection()) {
+            String sql = "SELECT account_id, \"type\", balance, owner_id, pending, created_at FROM bankapp_schema.accounts where pending = ?;\n";
+
+            try(PreparedStatement preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+                preparedStatement.setBoolean(1, isPending);
+
+                ResultSet rs = preparedStatement.executeQuery();
+                List<Account> accounts = new ArrayList<>();
+                while (rs.next()) {
+                    Account account = new Account();
+                    account.setAccountId(rs.getInt("account_id"));
+                    account.setType(rs.getString("type"));
+                    account.setBalance(rs.getBigDecimal("balance"));
+                    account.setOwnerId(rs.getInt("owner_id"));
+                    account.setPending(rs.getBoolean("pending"));
+                    account.setCreatedAt(rs.getDate("created_at"));
+                    accounts.add(account);
+                }
+
+                return accounts;
+            }
+
+        } catch (SQLException e) {
+            throw new BusinessException("Internal error occurred. Please contact sysadmin");
+        }
+    }
+
+    @Override
+    public void updatePending(Account account, boolean pending) throws BusinessException{
+        try(Connection connection = PostgresConnection.getConnection()) {
+            String sql = "UPDATE bankapp_schema.accounts SET pending = ? WHERE account_id = ?";
+
+            try(PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+                ps.setBoolean(1, pending);
+                ps.setInt(2, account.getAccountId());
+
+                int c = ps.executeUpdate();
+                if (c == 1) {
+
+                } else throw new BusinessException("Account could not be updated.");
+            }
+        } catch (SQLException e) {
+            throw new BusinessException("Internal error occurred. Please contact sysadmin" + e);
+        }
+    }
+
     /**
      * Gets all the accounts owned by a single user
      * @param ownerId - The owner of the accounts you want to fetch
